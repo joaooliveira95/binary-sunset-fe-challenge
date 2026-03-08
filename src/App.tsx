@@ -101,7 +101,14 @@ function App() {
   const handleClearSelection = () => {
     gridApiRef.current?.deselectAll();
   };
+
+  const handleClearFilters = () => {
+    setQuickFilter('');
+    gridApiRef.current?.setFilterModel(null);
+  };
+
   const isFiltered = quickFilter.trim().length > 0;
+  const showEmptyState = displayedRowCount === 0 && rowData.length > 0;
   const rowCountLabel =
     displayedRowCount != null && isFiltered
       ? `Showing ${displayedRowCount.toLocaleString()} of ${DEFAULT_ROW_COUNT.toLocaleString()} rows`
@@ -281,7 +288,7 @@ function App() {
       <Box as="main" flex={1} minH={0} p={4}>
         <Box
           w="100%"
-          h="70vh"
+          position="relative"
           minH="500px"
           borderRadius="12px"
           overflow="hidden"
@@ -290,7 +297,8 @@ function App() {
           borderWidth="1px"
           borderColor={gridContainerBorder}
         >
-          <DataGrid<GridRow>
+          <Box h="70vh" minH="500px">
+            <DataGrid<GridRow>
             rowData={rowData}
             columnDefs={columnDefs}
             quickFilterText={quickFilter}
@@ -301,6 +309,27 @@ function App() {
             onSelectionChanged={setSelectedRows}
             gridApiRef={gridApiRef}
           />
+          </Box>
+          {showEmptyState && (
+            <Box
+              position="absolute"
+              inset={0}
+              display="flex"
+              flexDirection="column"
+              alignItems="center"
+              justifyContent="center"
+              bg={gridContainerBg}
+              borderRadius="12px"
+              gap={3}
+            >
+              <Text color={subtextColor} fontSize="md">
+                No rows match your filters.
+              </Text>
+              <Button size="md" colorScheme="blue" onClick={handleClearFilters}>
+                Clear filters
+              </Button>
+            </Box>
+          )}
           {aggregation != null && (
             <Box
               mt={0}
