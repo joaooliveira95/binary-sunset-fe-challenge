@@ -156,6 +156,8 @@ export function getColumnDefs(visibility?: ColumnVisibility, options?: ColumnDef
       width: 100,
       filter: 'agNumberColumnFilter',
       filterParams: { maxNumConditions: 2 },
+      tooltipValueGetter: () =>
+        'Margin % = (profit / revenue) × 100. Red when negative.',
       valueGetter: (params) => {
         const r = getRow(params);
         return r != null ? getMarginPercent(r) : null;
@@ -173,6 +175,18 @@ export function getColumnDefs(visibility?: ColumnVisibility, options?: ColumnDef
       width: 130,
       filter: 'agTextColumnFilter',
       filterParams: { filterOptions: ['equals'], defaultOption: 'equals' },
+      tooltipValueGetter: (params) => {
+        const r = getRow(params);
+        if (!r) return '';
+        const s = getStatus(r);
+        const tips: Record<string, string> = {
+          'High Priority': 'Profit is negative.',
+          Warning: 'Profit < 100 or margin < 5%.',
+          Pending: 'Row is inactive.',
+          Completed: 'Healthy profit and margin.',
+        };
+        return tips[s] ?? '';
+      },
       valueGetter: (params) => {
         const r = getRow(params);
         return r != null ? getStatus(r) : null;
