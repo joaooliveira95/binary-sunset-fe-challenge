@@ -28,6 +28,23 @@ import { getRowCalculations } from './calculations/rowCalculations';
 import { CompareRowsModal } from './CompareRowsModal';
 import type { GridRow } from './types';
 
+const VIEW_STORAGE_KEY = 'grid-view';
+
+function loadView(): Partial<{
+  columnVisibility: ColumnVisibility;
+  quickFilter: string;
+  paginationPageSize: number | null;
+  groupByCategory: boolean;
+  dense: boolean;
+}> {
+  try {
+    const raw = localStorage.getItem(VIEW_STORAGE_KEY);
+    return raw ? JSON.parse(raw) : {};
+  } catch {
+    return {};
+  }
+}
+
 /** Escapes a cell value for CSV (quotes and commas). */
 function escapeCsvCell(value: string | number | boolean): string {
   const s = String(value);
@@ -67,16 +84,19 @@ function exportSelectedRowsToCsv(rows: GridRow[], fileName: string) {
 function App() {
   const { toggleColorMode, colorMode } = useColorMode();
   const gridApiRef = useRef<GridApi<GridRow> | null>(null);
-  const [quickFilter, setQuickFilter] = useState('');
+  const savedView = useMemo(loadView, []);
+  const [quickFilter, setQuickFilter] = useState(savedView.quickFilter ?? '');
   const [displayedRowCount, setDisplayedRowCount] = useState<number | null>(null);
   const [selectedRows, setSelectedRows] = useState<GridRow[]>([]);
   const [compareModalOpen, setCompareModalOpen] = useState(false);
-  const [columnVisibility, setColumnVisibility] = useState<ColumnVisibility>(() =>
-    Object.fromEntries(COLUMNS_FOR_VISIBILITY.map((c) => [c.colId, true]))
+  const [columnVisibility, setColumnVisibility] = useState<ColumnVisibility>(
+    () => savedView.columnVisibility ?? Object.fromEntries(COLUMNS_FOR_VISIBILITY.map((c) => [c.colId, true]))
   );
-  const [groupByCategory, setGroupByCategory] = useState(false);
-  const [paginationPageSize, setPaginationPageSize] = useState<number | null>(null);
-  const [dense, setDense] = useState(false);
+  const [groupByCategory, setGroupByCategory] = useState(savedView.groupByCategory ?? false);
+  const [paginationPageSize, setPaginationPageSize] = useState<number | null>(
+    savedView.paginationPageSize ?? null
+  );
+  const [dense, setDense] = useState(savedView.dense ?? false);
   const [aggregation, setAggregation] = useState<AggregationTotals | null>(null);
   const [rowData, setRowData] = useState<GridRow[] | null>(null);
   const rowHeight = dense ? 32 : 42;
@@ -84,6 +104,18 @@ function App() {
     const t = setTimeout(() => setRowData(generateData(DEFAULT_ROW_COUNT)), 400);
     return () => clearTimeout(t);
   }, []);
+  useEffect(() => {
+    localStorage.setItem(
+      VIEW_STORAGE_KEY,
+      JSON.stringify({
+        columnVisibility,
+        quickFilter,
+        paginationPageSize,
+        groupByCategory,
+        dense,
+      })
+    );
+  }, [columnVisibility, quickFilter, paginationPageSize, groupByCategory, dense]);
   const columnDefs = useMemo(
     () => getColumnDefs(columnVisibility, { groupByCategory }),
     [columnVisibility, groupByCategory]
