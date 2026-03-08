@@ -64,6 +64,8 @@ export function getColumnDefs(visibility?: ColumnVisibility): ColDef<GridRow>[] 
       headerName: 'Category',
       hide: !isVisible('category'),
       width: 120,
+      filter: 'agTextColumnFilter',
+      filterParams: { filterOptions: ['contains', 'equals', 'startsWith'] },
     },
     {
       field: 'revenue',
@@ -73,6 +75,8 @@ export function getColumnDefs(visibility?: ColumnVisibility): ColDef<GridRow>[] 
       width: 110,
       editable: true,
       type: 'numericColumn',
+      filter: 'agNumberColumnFilter',
+      filterParams: { maxNumConditions: 2 },
       cellClass: 'editable-cell',
       valueParser: (params) => {
         const n = Number(params.newValue);
@@ -87,6 +91,8 @@ export function getColumnDefs(visibility?: ColumnVisibility): ColDef<GridRow>[] 
       width: 100,
       editable: true,
       type: 'numericColumn',
+      filter: 'agNumberColumnFilter',
+      filterParams: { maxNumConditions: 2 },
       cellClass: 'editable-cell',
       valueParser: (params) => {
         const n = Number(params.newValue);
@@ -101,6 +107,8 @@ export function getColumnDefs(visibility?: ColumnVisibility): ColDef<GridRow>[] 
       width: 90,
       editable: true,
       type: 'numericColumn',
+      filter: 'agNumberColumnFilter',
+      filterParams: { maxNumConditions: 2 },
       cellClass: 'editable-cell',
       valueParser: (params) => {
         const n = Number(params.newValue);
@@ -114,12 +122,16 @@ export function getColumnDefs(visibility?: ColumnVisibility): ColDef<GridRow>[] 
       hide: !isVisible('active'),
       width: 100,
       cellRenderer: ActiveCellRenderer,
+      filter: 'agTextColumnFilter',
+      filterParams: { filterOptions: ['equals'], defaultOption: 'equals' },
     },
     {
       colId: 'profit',
       headerName: 'Profit',
       hide: !isVisible('profit'),
       width: 110,
+      filter: 'agNumberColumnFilter',
+      filterParams: { maxNumConditions: 2 },
       valueGetter: (params) => {
         // Calculated: revenue - cost; refreshed on edit via refreshCells
         const r = getRow(params);
@@ -136,6 +148,8 @@ export function getColumnDefs(visibility?: ColumnVisibility): ColDef<GridRow>[] 
       headerName: 'Margin %',
       hide: !isVisible('marginPercent'),
       width: 100,
+      filter: 'agNumberColumnFilter',
+      filterParams: { maxNumConditions: 2 },
       valueGetter: (params) => {
         const r = getRow(params);
         return r != null ? getMarginPercent(r) : null;
@@ -151,6 +165,8 @@ export function getColumnDefs(visibility?: ColumnVisibility): ColDef<GridRow>[] 
       headerName: 'Status',
       hide: !isVisible('status'),
       width: 130,
+      filter: 'agTextColumnFilter',
+      filterParams: { filterOptions: ['equals'], defaultOption: 'equals' },
       valueGetter: (params) => {
         const r = getRow(params);
         return r != null ? getStatus(r) : null;
