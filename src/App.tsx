@@ -1,4 +1,4 @@
-import { useMemo, useState, useRef } from 'react';
+import { useMemo, useState, useRef, useEffect } from 'react';
 import {
   Box,
   Container,
@@ -15,6 +15,7 @@ import {
   MenuList,
   MenuItem,
   Select,
+  Spinner,
   useColorMode,
   useColorModeValue,
 } from '@chakra-ui/react';
@@ -77,8 +78,12 @@ function App() {
   const [paginationPageSize, setPaginationPageSize] = useState<number | null>(null);
   const [dense, setDense] = useState(false);
   const [aggregation, setAggregation] = useState<AggregationTotals | null>(null);
+  const [rowData, setRowData] = useState<GridRow[] | null>(null);
   const rowHeight = dense ? 32 : 42;
-  const rowData = useMemo(() => generateData(DEFAULT_ROW_COUNT), []);
+  useEffect(() => {
+    const t = setTimeout(() => setRowData(generateData(DEFAULT_ROW_COUNT)), 400);
+    return () => clearTimeout(t);
+  }, []);
   const columnDefs = useMemo(
     () => getColumnDefs(columnVisibility, { groupByCategory }),
     [columnVisibility, groupByCategory]
@@ -110,7 +115,8 @@ function App() {
   };
 
   const isFiltered = quickFilter.trim().length > 0;
-  const showEmptyState = displayedRowCount === 0 && rowData.length > 0;
+  const showEmptyState = displayedRowCount === 0 && rowData != null && rowData.length > 0;
+  const isLoading = rowData === null;
   const rowCountLabel =
     displayedRowCount != null && isFiltered
       ? `Showing ${displayedRowCount.toLocaleString()} of ${DEFAULT_ROW_COUNT.toLocaleString()} rows`
@@ -310,7 +316,7 @@ function App() {
         >
           <Box h="70vh" minH="500px">
             <DataGrid<GridRow>
-            rowData={rowData}
+            rowData={rowData ?? []}
             columnDefs={columnDefs}
             quickFilterText={quickFilter}
             groupByCategory={groupByCategory}
@@ -322,6 +328,22 @@ function App() {
             gridApiRef={gridApiRef}
           />
           </Box>
+          {isLoading && (
+            <Box
+              position="absolute"
+              inset={0}
+              display="flex"
+              flexDirection="column"
+              alignItems="center"
+              justifyContent="center"
+              bg={gridContainerBg}
+              borderRadius="12px"
+              gap={3}
+            >
+              <Spinner size="xl" color="blue.500" />
+              <Text color={subtextColor}>Loading grid…</Text>
+            </Box>
+          )}
           {showEmptyState && (
             <Box
               position="absolute"
