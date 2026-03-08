@@ -19,13 +19,14 @@ import {
   useColorMode,
   useColorModeValue,
 } from '@chakra-ui/react';
-import { FiSearch, FiSun, FiMoon, FiLayers, FiDownload, FiX, FiChevronDown, FiColumns } from 'react-icons/fi';
+import { FiSearch, FiSun, FiMoon, FiLayers, FiDownload, FiX, FiChevronDown, FiColumns, FiBarChart2 } from 'react-icons/fi';
 import type { GridApi } from 'ag-grid-community';
 import { DataGrid, type AggregationTotals } from './grid/DataGrid';
 import { getColumnDefs, COLUMNS_FOR_VISIBILITY, type ColumnVisibility } from './grid/columnDefs';
 import { generateData, DEFAULT_ROW_COUNT } from './data/generateData';
 import { getRowCalculations } from './calculations/rowCalculations';
 import { CompareRowsModal } from './CompareRowsModal';
+import { ProfitByCategoryChart } from './ProfitByCategoryChart';
 import type { GridRow } from './types';
 
 const VIEW_STORAGE_KEY = 'grid-view';
@@ -84,11 +85,13 @@ function exportSelectedRowsToCsv(rows: GridRow[], fileName: string) {
 function App() {
   const { toggleColorMode, colorMode } = useColorMode();
   const gridApiRef = useRef<GridApi<GridRow> | null>(null);
+  const hasHadRowsRef = useRef(false);
   const savedView = useMemo(loadView, []);
   const [quickFilter, setQuickFilter] = useState(savedView.quickFilter ?? '');
   const [displayedRowCount, setDisplayedRowCount] = useState<number | null>(null);
   const [selectedRows, setSelectedRows] = useState<GridRow[]>([]);
   const [compareModalOpen, setCompareModalOpen] = useState(false);
+  const [chartModalOpen, setChartModalOpen] = useState(false);
   const [columnVisibility, setColumnVisibility] = useState<ColumnVisibility>(
     () => savedView.columnVisibility ?? Object.fromEntries(COLUMNS_FOR_VISIBILITY.map((c) => [c.colId, true]))
   );
@@ -147,7 +150,12 @@ function App() {
   };
 
   const isFiltered = quickFilter.trim().length > 0;
-  const showEmptyState = displayedRowCount === 0 && rowData != null && rowData.length > 0;
+  if (displayedRowCount != null && displayedRowCount > 0) hasHadRowsRef.current = true;
+  const showEmptyState =
+    displayedRowCount === 0 &&
+    rowData != null &&
+    rowData.length > 0 &&
+    (isFiltered || hasHadRowsRef.current);
   const isLoading = rowData === null;
   const rowCountLabel =
     displayedRowCount != null && isFiltered
@@ -299,6 +307,15 @@ function App() {
                   ))}
                 </MenuList>
               </Menu>
+              <Button
+                size="md"
+                variant="outline"
+                leftIcon={<FiBarChart2 size={18} />}
+                onClick={() => setChartModalOpen(true)}
+                isDisabled={rowData == null || rowData.length === 0}
+              >
+                Chart
+              </Button>
               <Menu>
                 <MenuButton
                   as={Button}
@@ -430,6 +447,11 @@ function App() {
         isOpen={compareModalOpen}
         onClose={() => setCompareModalOpen(false)}
         rows={selectedRows.length >= 2 ? selectedRows.slice(0, 2) : []}
+      />
+      <ProfitByCategoryChart
+        isOpen={chartModalOpen}
+        onClose={() => setChartModalOpen(false)}
+        rows={rowData ?? []}
       />
     </Box>
   );
