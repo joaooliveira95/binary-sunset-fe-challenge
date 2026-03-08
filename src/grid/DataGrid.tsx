@@ -10,6 +10,7 @@ interface DataGridProps<T> {
   rowData: T[];
   columnDefs: ColDef<T>[];
   quickFilterText?: string;
+  groupByCategory?: boolean;
   onDisplayedRowCountChange?: (count: number) => void;
   onSelectionChanged?: (selectedRows: T[]) => void;
   gridApiRef?: MutableRefObject<GridApi<T> | null>;
@@ -19,6 +20,7 @@ export function DataGrid<T>({
   rowData,
   columnDefs,
   quickFilterText = '',
+  groupByCategory = false,
   onDisplayedRowCountChange,
   onSelectionChanged,
   gridApiRef,
@@ -105,6 +107,7 @@ export function DataGrid<T>({
         onSelectionChanged={onSelectionChangedCallback}
         onGridReady={onGridReady}
         onCellValueChanged={onCellValueChanged}
+        groupDefaultExpanded={groupByCategory ? 1 : undefined}
         suppressAnimationFrame={false}
         rowBuffer={20}
         debounceVerticalScrollbar={true}

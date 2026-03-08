@@ -23,13 +23,18 @@ export const COLUMNS_FOR_VISIBILITY: { colId: string; headerName: string }[] = [
 
 export type ColumnVisibility = Record<string, boolean>;
 
+export interface ColumnDefsOptions {
+  groupByCategory?: boolean;
+}
+
 function getRow(params: { data?: GridRow | null }): GridRow | null {
   return params.data ?? null;
 }
 
 /** AG Grid column definitions: checkbox, id, name, category, editable revenue/cost/qty, chips (Active, Status), calculated Profit and Margin %. */
-export function getColumnDefs(visibility?: ColumnVisibility): ColDef<GridRow>[] {
+export function getColumnDefs(visibility?: ColumnVisibility, options?: ColumnDefsOptions): ColDef<GridRow>[] {
   const isVisible = (colId: string) => visibility == null || visibility[colId] !== false;
+  const groupByCategory = options?.groupByCategory === true;
   return [
     {
       colId: '_checkbox',
@@ -62,8 +67,9 @@ export function getColumnDefs(visibility?: ColumnVisibility): ColDef<GridRow>[] 
       field: 'category',
       colId: 'category',
       headerName: 'Category',
-      hide: !isVisible('category'),
+      hide: groupByCategory ? true : !isVisible('category'),
       width: 120,
+      rowGroup: groupByCategory,
       filter: 'agTextColumnFilter',
       filterParams: { filterOptions: ['contains', 'equals', 'startsWith'] },
     },

@@ -72,8 +72,12 @@ function App() {
   const [columnVisibility, setColumnVisibility] = useState<ColumnVisibility>(() =>
     Object.fromEntries(COLUMNS_FOR_VISIBILITY.map((c) => [c.colId, true]))
   );
+  const [groupByCategory, setGroupByCategory] = useState(false);
   const rowData = useMemo(() => generateData(DEFAULT_ROW_COUNT), []);
-  const columnDefs = useMemo(() => getColumnDefs(columnVisibility), [columnVisibility]);
+  const columnDefs = useMemo(
+    () => getColumnDefs(columnVisibility, { groupByCategory }),
+    [columnVisibility, groupByCategory]
+  );
 
   const toggleColumnVisibility = (colId: string) => {
     setColumnVisibility((prev) => ({ ...prev, [colId]: !prev[colId] }));
@@ -186,6 +190,14 @@ function App() {
                   Clear selection
                 </Button>
               )}
+              <Button
+                size="md"
+                variant={groupByCategory ? 'solid' : 'outline'}
+                colorScheme={groupByCategory ? 'blue' : undefined}
+                onClick={() => setGroupByCategory((v) => !v)}
+              >
+                Group by category
+              </Button>
               <Menu>
                 <MenuButton
                   as={Button}
@@ -264,6 +276,7 @@ function App() {
             rowData={rowData}
             columnDefs={columnDefs}
             quickFilterText={quickFilter}
+            groupByCategory={groupByCategory}
             onDisplayedRowCountChange={setDisplayedRowCount}
             onSelectionChanged={setSelectedRows}
             gridApiRef={gridApiRef}
