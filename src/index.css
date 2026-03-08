@@ -1,0 +1,101 @@
+:root {
+  font-family: -apple-system, BlinkMacSystemFont, "SF Pro Text", "Segoe UI", system-ui, sans-serif;
+  line-height: 1.5;
+  font-weight: 400;
+  color: #1d1d1f;
+  background-color: #f5f5f7;
+}
+
+* {
+  box-sizing: border-box;
+}
+
+body {
+  margin: 0;
+  min-height: 100vh;
+  -webkit-font-smoothing: antialiased;
+}
+
+#root {
+  min-height: 100vh;
+}
+
+/* AG Grid – Apple-inspired theme */
+.ag-theme-quartz {
+  --ag-font-family: inherit;
+  --ag-header-background-color: #e8e8ed;
+  --ag-header-foreground-color: #1d1d1f;
+  --ag-row-hover-color: #e5e5ea;
+  --ag-selected-row-background-color: #d1d1d6;
+  --ag-border-color: #d2d2d7;
+  --ag-row-border-color: #e5e5ea;
+}
+
+.ag-theme-quartz .ag-cell {
+  color: #1d1d1f;
+  padding-left: 14px;
+  padding-right: 14px;
+}
+
+/* Zebra: very subtle */
+.ag-theme-quartz .ag-row-odd {
+  background-color: #fafafa;
+}
+
+.ag-theme-quartz .ag-row-hover {
+  background-color: #e5e5ea !important;
+}
+
+/* Negative numbers */
+.ag-theme-quartz .cell-negative {
+  color: #ff3b30;
+  font-weight: 600;
+}
+
+/* Editable cells */
+.ag-theme-quartz .editable-cell:hover {
+  background-color: #e8f5e9;
+}
+
+.ag-theme-quartz .editable-cell.ag-cell-focus {
+  background-color: #fff8e1;
+}
+
+/* Dark mode – AG Grid */
+.chakra-ui-dark .ag-theme-quartz {
+  --ag-header-background-color: #2d3748;
+  --ag-header-foreground-color: #e2e8f0;
+  --ag-row-hover-color: #4a5568;
+  --ag-selected-row-background-color: #4a5568;
+  --ag-border-color: #4a5568;
+  --ag-row-border-color: #4a5568;
+  --ag-background-color: #1a202c;
+}
+
+.chakra-ui-dark .ag-theme-quartz .ag-cell {
+  color: #e2e8f0;
+}
+
+.chakra-ui-dark .ag-theme-quartz .ag-row-odd {
+  background-color: #1a202c;
+}
+
+.chakra-ui-dark .ag-theme-quartz .ag-row-even {
+  background-color: #171923;
+}
+
+.chakra-ui-dark .ag-theme-quartz .ag-row-hover {
+  background-color: #4a5568 !important;
+}
+
+.chakra-ui-dark .ag-theme-quartz .cell-negative {
+  color: #fc8181;
+}
+
+.chakra-ui-dark .ag-theme-quartz .editable-cell:hover {
+  background-color: #2d5016;
+}
+
+.chakra-ui-dark .ag-theme-quartz .editable-cell.ag-cell-focus {
+  background-color: #553c2a;
+}

@@ -1,0 +1,248 @@
+import { useMemo, useState, useRef } from 'react';
+import {
+  Box,
+  Container,
+  Heading,
+  Text,
+  Input,
+  InputGroup,
+  InputLeftElement,
+  InputRightElement,
+  IconButton,
+  Button,
+  Menu,
+  MenuButton,
+  MenuList,
+  MenuItem,
+  useColorMode,
+  useColorModeValue,
+} from '@chakra-ui/react';
+import { FiSearch, FiSun, FiMoon, FiLayers, FiDownload, FiX, FiChevronDown } from 'react-icons/fi';
+import type { GridApi } from 'ag-grid-community';
+import { DataGrid } from './grid/DataGrid';
+import { getColumnDefs } from './grid/columnDefs';
+import { generateData, DEFAULT_ROW_COUNT } from './data/generateData';
+import { getRowCalculations } from './calculations/rowCalculations';
+import { CompareRowsModal } from './CompareRowsModal';
+import type { GridRow } from './types';
+
+/** Escapes a cell value for CSV (quotes and commas). */
+function escapeCsvCell(value: string | number | boolean): string {
+  const s = String(value);
+  if (/[",\n\r]/.test(s)) return `"${s.replace(/"/g, '""')}"`;
+  return s;
+}
+
+/** Builds and downloads a CSV file from selected rows, including calculated profit, margin %, and status. */
+function exportSelectedRowsToCsv(rows: GridRow[], fileName: string) {
+  const headers = ['id', 'name', 'category', 'revenue', 'cost', 'quantity', 'active', 'profit', 'marginPercent', 'status'];
+  const headerRow = headers.join(',');
+  const dataRows = rows.map((row) => {
+    const { profit, marginPercent, status } = getRowCalculations(row);
+    return [
+      row.id,
+      row.name,
+      row.category,
+      row.revenue,
+      row.cost,
+      row.quantity,
+      row.active,
+      profit.toFixed(2),
+      marginPercent.toFixed(1),
+      status,
+    ].map(escapeCsvCell).join(',');
+  });
+  const csv = [headerRow, ...dataRows].join('\n');
+  const blob = new Blob([csv], { type: 'text/csv;charset=utf-8;' });
+  const url = URL.createObjectURL(blob);
+  const a = document.createElement('a');
+  a.href = url;
+  a.download = fileName;
+  a.click();
+  URL.revokeObjectURL(url);
+}
+
+function App() {
+  const { toggleColorMode, colorMode } = useColorMode();
+  const gridApiRef = useRef<GridApi<GridRow> | null>(null);
+  const [quickFilter, setQuickFilter] = useState('');
+  const [displayedRowCount, setDisplayedRowCount] = useState<number | null>(null);
+  const [selectedRows, setSelectedRows] = useState<GridRow[]>([]);
+  const [compareModalOpen, setCompareModalOpen] = useState(false);
+  const rowData = useMemo(() => generateData(DEFAULT_ROW_COUNT), []);
+  const columnDefs = useMemo(() => getColumnDefs(), []);
+
+  /** Export all visible (filtered) rows via AG Grid CSV export. */
+  const handleExportAll = () => {
+    gridApiRef.current?.exportDataAsCsv({ fileName: 'grid-export-all.csv' });
+  };
+
+  /** Export only selected rows to CSV (includes calculated fields). */
+  const handleExportSelected = () => {
+    if (selectedRows.length > 0) {
+      exportSelectedRowsToCsv(selectedRows, 'grid-export-selected.csv');
+    }
+  };
+
+  const handleClearSelection = () => {
+    gridApiRef.current?.deselectAll();
+  };
+  const isFiltered = quickFilter.trim().length > 0;
+  const rowCountLabel =
+    displayedRowCount != null && isFiltered
+      ? `Showing ${displayedRowCount.toLocaleString()} of ${DEFAULT_ROW_COUNT.toLocaleString()} rows`
+      : `${DEFAULT_ROW_COUNT.toLocaleString()} rows`;
+
+  const pageBg = useColorModeValue('#f5f5f7', 'gray.900');
+  const headerBg = useColorModeValue('white', 'gray.800');
+  const headerBorder = useColorModeValue('#e5e5ea', 'gray.700');
+  const headingColor = useColorModeValue('#1d1d1f', 'whiteAlpha.900');
+  const subtextColor = useColorModeValue('#6e6e73', 'gray.400');
+  const inputBg = useColorModeValue('white', 'gray.700');
+  const gridContainerBg = useColorModeValue('white', 'gray.800');
+  const gridContainerBorder = useColorModeValue('#d2d2d7', 'gray.600');
+  const searchIconColor = useColorModeValue('#718096', 'gray.400');
+
+  return (
+    <Box minH="100vh" display="flex" flexDirection="column" bg={pageBg}>
+      <Box
+        as="header"
+        py={5}
+        px={6}
+        bg={headerBg}
+        borderBottomWidth="1px"
+        borderColor={headerBorder}
+        flexShrink={0}
+      >
+        <Box display="flex" alignItems="flex-start" justifyContent="space-between" gap={4}>
+          <Container maxW="full" px={0} flex={1} minW={0}>
+            <Heading size="lg" fontWeight="600" color={headingColor} letterSpacing="tight">
+              AG Grid Data Table
+            </Heading>
+            <Text mt={1} fontSize="sm" color={subtextColor}>
+              {rowCountLabel} · Edit Revenue, Cost, or Qty to see calculations and status update
+              in real time.
+            </Text>
+            <Box mt={4} display="flex" alignItems="center" gap={3} flexWrap="wrap">
+              <InputGroup maxW="md" size="md">
+                <InputLeftElement
+                  pointerEvents="none"
+                  height="100%"
+                  display="flex"
+                  alignItems="center"
+                  justifyContent="center"
+                >
+                  <Box as="span" color={searchIconColor} display="inline-flex">
+                    <FiSearch size={20} aria-hidden />
+                  </Box>
+                </InputLeftElement>
+                <Input
+                  type="text"
+                  placeholder="Search all columns..."
+                  value={quickFilter}
+                  onChange={(e) => setQuickFilter(e.target.value)}
+                  bg={inputBg}
+                  borderColor="gray.500"
+                  color={headingColor}
+                  aria-label="Search table rows across all columns"
+                  _placeholder={{ color: 'gray.500' }}
+                  _focus={{
+                    borderColor: 'blue.400',
+                    boxShadow: '0 0 0 1px var(--chakra-colors-blue-400)',
+                    bg: inputBg,
+                  }}
+                />
+                {quickFilter.length > 0 && (
+                  <InputRightElement height="100%">
+                    <IconButton
+                      aria-label="Clear search"
+                      icon={<FiX size={16} />}
+                      size="xs"
+                      variant="ghost"
+                      onClick={() => setQuickFilter('')}
+                    />
+                  </InputRightElement>
+                )}
+              </InputGroup>
+              <Button
+                leftIcon={<FiLayers size={18} />}
+                size="md"
+                variant="outline"
+                isDisabled={selectedRows.length !== 2}
+                onClick={() => setCompareModalOpen(true)}
+                title={selectedRows.length !== 2 ? 'Select exactly 2 rows to compare' : 'Compare selected rows'}
+              >
+                Compare ({selectedRows.length}/2)
+              </Button>
+              {selectedRows.length > 0 && (
+                <Button size="md" variant="ghost" onClick={handleClearSelection}>
+                  Clear selection
+                </Button>
+              )}
+              <Menu>
+                <MenuButton
+                  as={Button}
+                  size="md"
+                  variant="outline"
+                  leftIcon={<FiDownload size={18} />}
+                  rightIcon={<FiChevronDown size={16} />}
+                >
+                  Export
+                </MenuButton>
+                <MenuList>
+                  <MenuItem onClick={handleExportAll}>
+                    Export all (visible rows)
+                  </MenuItem>
+                  <MenuItem
+                    onClick={handleExportSelected}
+                    isDisabled={selectedRows.length === 0}
+                    title={selectedRows.length === 0 ? 'Select rows first' : undefined}
+                  >
+                    Export selected ({selectedRows.length})
+                  </MenuItem>
+                </MenuList>
+              </Menu>
+            </Box>
+          </Container>
+          <IconButton
+            aria-label={colorMode === 'dark' ? 'Switch to light theme' : 'Switch to dark theme'}
+            icon={colorMode === 'dark' ? <FiSun size={20} /> : <FiMoon size={20} />}
+            onClick={toggleColorMode}
+            variant="ghost"
+            size="md"
+            flexShrink={0}
+          />
+        </Box>
+      </Box>
+      <Box as="main" flex={1} minH={0} p={4}>
+        <Box
+          w="100%"
+          h="70vh"
+          minH="500px"
+          borderRadius="12px"
+          overflow="hidden"
+          shadow="0 2px 8px rgba(0,0,0,0.06)"
+          bg={gridContainerBg}
+          borderWidth="1px"
+          borderColor={gridContainerBorder}
+        >
+          <DataGrid<GridRow>
+            rowData={rowData}
+            columnDefs={columnDefs}
+            quickFilterText={quickFilter}
+            onDisplayedRowCountChange={setDisplayedRowCount}
+            onSelectionChanged={setSelectedRows}
+            gridApiRef={gridApiRef}
+          />
+        </Box>
+      </Box>
+      <CompareRowsModal
+        isOpen={compareModalOpen}
+        onClose={() => setCompareModalOpen(false)}
+        rows={selectedRows.length >= 2 ? selectedRows.slice(0, 2) : []}
+      />
+    </Box>
+  );
+}
+
+export default App;
