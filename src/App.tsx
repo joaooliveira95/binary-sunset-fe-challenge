@@ -17,10 +17,10 @@ import {
   useColorMode,
   useColorModeValue,
 } from '@chakra-ui/react';
-import { FiSearch, FiSun, FiMoon, FiLayers, FiDownload, FiX, FiChevronDown } from 'react-icons/fi';
+import { FiSearch, FiSun, FiMoon, FiLayers, FiDownload, FiX, FiChevronDown, FiColumns } from 'react-icons/fi';
 import type { GridApi } from 'ag-grid-community';
 import { DataGrid } from './grid/DataGrid';
-import { getColumnDefs } from './grid/columnDefs';
+import { getColumnDefs, COLUMNS_FOR_VISIBILITY, type ColumnVisibility } from './grid/columnDefs';
 import { generateData, DEFAULT_ROW_COUNT } from './data/generateData';
 import { getRowCalculations } from './calculations/rowCalculations';
 import { CompareRowsModal } from './CompareRowsModal';
@@ -69,8 +69,15 @@ function App() {
   const [displayedRowCount, setDisplayedRowCount] = useState<number | null>(null);
   const [selectedRows, setSelectedRows] = useState<GridRow[]>([]);
   const [compareModalOpen, setCompareModalOpen] = useState(false);
+  const [columnVisibility, setColumnVisibility] = useState<ColumnVisibility>(() =>
+    Object.fromEntries(COLUMNS_FOR_VISIBILITY.map((c) => [c.colId, true]))
+  );
   const rowData = useMemo(() => generateData(DEFAULT_ROW_COUNT), []);
-  const columnDefs = useMemo(() => getColumnDefs(), []);
+  const columnDefs = useMemo(() => getColumnDefs(columnVisibility), [columnVisibility]);
+
+  const toggleColumnVisibility = (colId: string) => {
+    setColumnVisibility((prev) => ({ ...prev, [colId]: !prev[colId] }));
+  };
 
   /** Export all visible (filtered) rows via AG Grid CSV export. */
   const handleExportAll = () => {
@@ -179,6 +186,33 @@ function App() {
                   Clear selection
                 </Button>
               )}
+              <Menu>
+                <MenuButton
+                  as={Button}
+                  size="md"
+                  variant="outline"
+                  leftIcon={<FiColumns size={18} />}
+                  rightIcon={<FiChevronDown size={16} />}
+                >
+                  Columns
+                </MenuButton>
+                <MenuList maxH="320px" overflowY="auto">
+                  {COLUMNS_FOR_VISIBILITY.map(({ colId, headerName }) => (
+                    <MenuItem
+                      key={colId}
+                      onClick={() => toggleColumnVisibility(colId)}
+                      closeOnSelect={false}
+                    >
+                      {columnVisibility[colId] !== false ? (
+                        <Box as="span" mr={2} color="green.500" aria-hidden>
+                          ✓
+                        </Box>
+                      ) : null}
+                      {headerName}
+                    </MenuItem>
+                  ))}
+                </MenuList>
+              </Menu>
               <Menu>
                 <MenuButton
                   as={Button}
