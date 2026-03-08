@@ -22,6 +22,7 @@ interface DataGridProps<T> {
   quickFilterText?: string;
   groupByCategory?: boolean;
   paginationPageSize?: number | null;
+  rowHeight?: number;
   onDisplayedRowCountChange?: (count: number) => void;
   onAggregationChange?: (totals: AggregationTotals) => void;
   onSelectionChanged?: (selectedRows: T[]) => void;
@@ -34,6 +35,7 @@ export function DataGrid<T extends GridRow>({
   quickFilterText = '',
   groupByCategory = false,
   paginationPageSize = null,
+  rowHeight,
   onDisplayedRowCountChange,
   onAggregationChange,
   onSelectionChanged,
@@ -154,6 +156,7 @@ export function DataGrid<T extends GridRow>({
         groupDefaultExpanded={groupByCategory ? 1 : undefined}
         pagination={pagination}
         paginationPageSize={pagination ? paginationPageSize! : undefined}
+        rowHeight={rowHeight}
         suppressAnimationFrame={false}
         rowBuffer={20}
         debounceVerticalScrollbar={true}

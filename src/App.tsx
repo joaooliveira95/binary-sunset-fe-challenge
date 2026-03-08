@@ -75,7 +75,9 @@ function App() {
   );
   const [groupByCategory, setGroupByCategory] = useState(false);
   const [paginationPageSize, setPaginationPageSize] = useState<number | null>(null);
+  const [dense, setDense] = useState(false);
   const [aggregation, setAggregation] = useState<AggregationTotals | null>(null);
+  const rowHeight = dense ? 32 : 42;
   const rowData = useMemo(() => generateData(DEFAULT_ROW_COUNT), []);
   const columnDefs = useMemo(
     () => getColumnDefs(columnVisibility, { groupByCategory }),
@@ -200,6 +202,15 @@ function App() {
                   Clear selection
                 </Button>
               )}
+              <Button
+                size="md"
+                variant={dense ? 'solid' : 'outline'}
+                colorScheme={dense ? 'gray' : undefined}
+                onClick={() => setDense((v) => !v)}
+                title={dense ? 'Comfortable density' : 'Compact density'}
+              >
+                {dense ? 'Compact' : 'Comfortable'}
+              </Button>
               <Select
                 size="md"
                 maxW="32"
@@ -304,6 +315,7 @@ function App() {
             quickFilterText={quickFilter}
             groupByCategory={groupByCategory}
             paginationPageSize={paginationPageSize}
+            rowHeight={rowHeight}
             onDisplayedRowCountChange={setDisplayedRowCount}
             onAggregationChange={setAggregation}
             onSelectionChanged={setSelectedRows}
