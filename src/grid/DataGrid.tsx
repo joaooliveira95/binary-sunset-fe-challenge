@@ -21,6 +21,7 @@ interface DataGridProps<T> {
   columnDefs: ColDef<T>[];
   quickFilterText?: string;
   groupByCategory?: boolean;
+  paginationPageSize?: number | null;
   onDisplayedRowCountChange?: (count: number) => void;
   onAggregationChange?: (totals: AggregationTotals) => void;
   onSelectionChanged?: (selectedRows: T[]) => void;
@@ -32,11 +33,13 @@ export function DataGrid<T extends GridRow>({
   columnDefs,
   quickFilterText = '',
   groupByCategory = false,
+  paginationPageSize = null,
   onDisplayedRowCountChange,
   onAggregationChange,
   onSelectionChanged,
   gridApiRef,
 }: DataGridProps<T>) {
+  const pagination = paginationPageSize != null && paginationPageSize > 0;
   const gridRef = useRef<AgGridReact<T>>(null);
 
   const updateDisplayedCount = useCallback(() => {
@@ -147,6 +150,8 @@ export function DataGrid<T extends GridRow>({
         onGridReady={onGridReady}
         onCellValueChanged={onCellValueChanged}
         groupDefaultExpanded={groupByCategory ? 1 : undefined}
+        pagination={pagination}
+        paginationPageSize={pagination ? paginationPageSize! : undefined}
         suppressAnimationFrame={false}
         rowBuffer={20}
         debounceVerticalScrollbar={true}

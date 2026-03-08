@@ -14,6 +14,7 @@ import {
   MenuButton,
   MenuList,
   MenuItem,
+  Select,
   useColorMode,
   useColorModeValue,
 } from '@chakra-ui/react';
@@ -73,6 +74,7 @@ function App() {
     Object.fromEntries(COLUMNS_FOR_VISIBILITY.map((c) => [c.colId, true]))
   );
   const [groupByCategory, setGroupByCategory] = useState(false);
+  const [paginationPageSize, setPaginationPageSize] = useState<number | null>(null);
   const [aggregation, setAggregation] = useState<AggregationTotals | null>(null);
   const rowData = useMemo(() => generateData(DEFAULT_ROW_COUNT), []);
   const columnDefs = useMemo(
@@ -191,6 +193,21 @@ function App() {
                   Clear selection
                 </Button>
               )}
+              <Select
+                size="md"
+                maxW="32"
+                value={paginationPageSize ?? 'all'}
+                onChange={(e) => {
+                  const v = e.target.value;
+                  setPaginationPageSize(v === 'all' ? null : Number(v));
+                }}
+                bg={inputBg}
+              >
+                <option value="all">All rows</option>
+                <option value="100">100</option>
+                <option value="500">500</option>
+                <option value="1000">1000</option>
+              </Select>
               <Button
                 size="md"
                 variant={groupByCategory ? 'solid' : 'outline'}
@@ -278,6 +295,7 @@ function App() {
             columnDefs={columnDefs}
             quickFilterText={quickFilter}
             groupByCategory={groupByCategory}
+            paginationPageSize={paginationPageSize}
             onDisplayedRowCountChange={setDisplayedRowCount}
             onAggregationChange={setAggregation}
             onSelectionChanged={setSelectedRows}
