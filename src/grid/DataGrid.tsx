@@ -139,6 +139,8 @@ export function DataGrid<T extends GridRow>({
     <div
       className="ag-theme-quartz"
       style={{ width: '100%', height: '70vh', minHeight: 500 }}
+      role="grid"
+      aria-label="Data grid: arrow keys to move, Enter to edit, Escape to cancel"
     >
       <AgGridReact<T>
         ref={gridRef}
