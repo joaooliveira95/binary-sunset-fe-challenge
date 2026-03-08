@@ -19,7 +19,7 @@ import {
 } from '@chakra-ui/react';
 import { FiSearch, FiSun, FiMoon, FiLayers, FiDownload, FiX, FiChevronDown, FiColumns } from 'react-icons/fi';
 import type { GridApi } from 'ag-grid-community';
-import { DataGrid } from './grid/DataGrid';
+import { DataGrid, type AggregationTotals } from './grid/DataGrid';
 import { getColumnDefs, COLUMNS_FOR_VISIBILITY, type ColumnVisibility } from './grid/columnDefs';
 import { generateData, DEFAULT_ROW_COUNT } from './data/generateData';
 import { getRowCalculations } from './calculations/rowCalculations';
@@ -73,6 +73,7 @@ function App() {
     Object.fromEntries(COLUMNS_FOR_VISIBILITY.map((c) => [c.colId, true]))
   );
   const [groupByCategory, setGroupByCategory] = useState(false);
+  const [aggregation, setAggregation] = useState<AggregationTotals | null>(null);
   const rowData = useMemo(() => generateData(DEFAULT_ROW_COUNT), []);
   const columnDefs = useMemo(
     () => getColumnDefs(columnVisibility, { groupByCategory }),
@@ -278,9 +279,38 @@ function App() {
             quickFilterText={quickFilter}
             groupByCategory={groupByCategory}
             onDisplayedRowCountChange={setDisplayedRowCount}
+            onAggregationChange={setAggregation}
             onSelectionChanged={setSelectedRows}
             gridApiRef={gridApiRef}
           />
+          {aggregation != null && (
+            <Box
+              mt={0}
+              py={2}
+              px={4}
+              borderTopWidth="1px"
+              borderColor={gridContainerBorder}
+              bg={gridContainerBg}
+              borderRadius="0 0 12px 12px"
+              fontSize="sm"
+              display="flex"
+              gap={6}
+              flexWrap="wrap"
+            >
+              <Text as="span" color={subtextColor}>
+                <Text as="span" fontWeight="600" color={headingColor}>Revenue:</Text> {aggregation.sumRevenue.toLocaleString(undefined, { minimumFractionDigits: 2 })}
+              </Text>
+              <Text as="span" color={subtextColor}>
+                <Text as="span" fontWeight="600" color={headingColor}>Cost:</Text> {aggregation.sumCost.toLocaleString(undefined, { minimumFractionDigits: 2 })}
+              </Text>
+              <Text as="span" color={subtextColor}>
+                <Text as="span" fontWeight="600" color={headingColor}>Profit:</Text> {aggregation.sumProfit.toLocaleString(undefined, { minimumFractionDigits: 2 })}
+              </Text>
+              <Text as="span" color={subtextColor}>
+                <Text as="span" fontWeight="600" color={headingColor}>Qty:</Text> {aggregation.sumQuantity.toLocaleString()}
+              </Text>
+            </Box>
+          )}
         </Box>
       </Box>
       <CompareRowsModal
