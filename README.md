@@ -155,6 +155,15 @@ Open [http://localhost:5173](http://localhost:5173) in your browser. The grid lo
   npm run e2e:open
   ```
 
+### Lint
+
+- **ESLint** (flat config) with TypeScript, React, React Hooks, and jsx-a11y:
+
+  ```bash
+  npm run lint
+  npm run lint:fix   # auto-fix where possible
+  ```
+
 ### Build for production
 
 ```bash
